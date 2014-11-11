@@ -147,7 +147,7 @@ class MLP(object):
         self.params = self.hiddenLayer.params + self.logRegressionLayer.params
 
 
-def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_size=3, n_hidden=3):
+def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, batch_size=3, n_hidden=3):
 	# Load in the data
 	train_set_x = T.matrix('training_set_x')
 	train_set_y = T.matrix('training_set_y')
@@ -172,7 +172,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batc
     cost = classifier.negative_log_likelihood(y) \
      + L1_reg * classifier.L1 \
      + L2_reg * classifier.L2_sqr
-     ß
+     
 	# compute the gradient of cost with respect to theta (sotred in params)
 	# the resulting gradients will be stored in a list gparams
 	gparams = []

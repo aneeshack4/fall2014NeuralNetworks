@@ -1,0 +1,2 @@
+Notes
+- Can tweak the L1, L2 norms (cost function), learning rate (updates.append) to see how it affects the network
