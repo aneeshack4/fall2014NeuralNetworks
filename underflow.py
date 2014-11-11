@@ -151,9 +151,9 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, batch
 	# Load in the data
 	train_set_x = T.matrix('training_set_x')
 	train_set_y = T.matrix('training_set_y')
-
-	train_set_x = [[0,0,0],[0,0,1], [0,1,1], [0,1,0], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-	train_set_y = [[0], [0], [0], [0], [0], [0], [0], [1]]
+	#
+	train_set_x = [[0,0,0],[0,0,1], [0,1,1], [0,1,0], [1,0,0], [1,1,0], [1,0,1], [1,1,1], [3,3,3]]
+	train_set_y = [[0], [0], [0], [0], [0], [0], [0], [1], [3]]
 
 	print "...initializing the variables and functions"
 	tempx = T.ivector('tempx')
@@ -193,16 +193,23 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, batch
 				x: tempx,
 				y: tempy})
 
+
 	print '...building the model'
 
 	epoch = 0
 	threshold = 0.1
 	while(epoch < n_epochs):
 		epoch += 1
-		for minibatch_index in range(0,7):
+		for minibatch_index in range(0,8):
 			minibatch_average_cost = train_model(train_set_x[minibatch_index], train_set_y[minibatch_index])
 
 			print(str(minibatch_average_cost) + " " + str(epoch) + " \n")
+
+	tempx = [1, 1, 1]
+	tempy = [1]
+
+	#output = train_model(tempx, tempy)
+	#print str(output)
 
 
 if __name__ == '__main__':
