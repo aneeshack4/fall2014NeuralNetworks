@@ -156,23 +156,17 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, batch
 	train_set_y = [[0], [0], [0], [0], [0], [0], [0], [1]]
 
 	print "...initializing the variables and functions"
-	index = T.lscalar() 
+	index = T.lscalar()
 	x = T.ivector('x')
 	y = T.ivector('y')
 
 	rng = numpy.random.RandomState(1234)
 	classifier = MLP(rng, x, 3, n_hidden, 1)
 
-	test_model = theano.function(inputs=[index],
-	            outputs=classifier.errors(y),
-	            givens={
-	                x: train_set_x[index * batch_size:(index + 1) * batch_size],
-	                y: train_set_y[index]})
-
-    cost = classifier.negative_log_likelihood(y) \
+	cost = classifier.negative_log_likelihood(y) \
      + L1_reg * classifier.L1 \
      + L2_reg * classifier.L2_sqr
-     
+
 	# compute the gradient of cost with respect to theta (sotred in params)
 	# the resulting gradients will be stored in a list gparams
 	gparams = []
@@ -190,5 +184,24 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, batch
 	for param, gparam in zip(classifier.params, gparams):
 	    updates.append((param, param - learning_rate * gparam))
 
+	train_model = theano.function(inputs=[index], 
+			outputs=cost, 
+			updates=updates, 
+			givens={
+				x: train_set_x[index * batch_size:(index + 1) * batch_size],
+				y: train_set_y[index]})
+
 	print '...building the model'
 
+	epoch = 0
+	threshold = 0.1
+	while(epoch < n_epochs):
+		epoch += 1
+		for minibatch_index in range(0,8):
+			minibatch_average_cost = train_model(minibatch_index)
+
+			print(minibatch_average_cost + " " + epoch + " \n")
+
+
+if __name__ == '__main__':
+	test_mlp()
