@@ -148,69 +148,91 @@ class MLP(object):
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, batch_size=3, n_hidden=3):
-	# Load in the data
-	train_set_x = T.matrix('training_set_x')
-	train_set_y = T.matrix('training_set_y')
-	#
-	train_set_x = [[0,0,0],[0,0,1], [0,1,1], [0,1,0], [1,0,0], [1,1,0], [1,0,1], [1,1,1], [3,3,3]]
-	train_set_y = [[0], [0], [0], [0], [0], [0], [0], [1], [3]]
+    # Load in the data
+	#train_set_x = T.matrix('training_set_x')
+	#train_set_y = T.matrix('training_set_y')
+	
+	#train_set_x = [[0,0,0],[0,0,1], [0,1,1], [0,1,0], [1,0,0], [1,1,0], [1,0,1], [1,1,1]]
+	#train_set_y = [[1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [0, 1]]
+    #train_set_y = [[[1], [0]], [[1], [0]], [[1], [0]], [[1], [0]], [[1], [0]], [[1], [0]], [[1], [0]], [[0], [1]]]
 
-	print "...initializing the variables and functions"
-	tempx = T.ivector('tempx')
-	tempy = T.ivector('tempy')
+    print "...initializing the variables and functions"
 
-	x = T.ivector('x')
-	y = T.ivector('y')
+    tempx = T.matrix('tempx')
+    tempy = T.ivector('tempy')
 
-	rng = numpy.random.RandomState(1234)
-	classifier = MLP(rng, x, 3, n_hidden, 1)
+    x = T.matrix('x')
+    y = T.ivector('y')
 
-	cost = classifier.negative_log_likelihood(y) \
+    y0 = T.ivector('y0')
+    y1 = T.ivector('y1')
+    y2 = T.ivector('y2')
+    y3 = T.ivector('y3')
+    y4 = T.ivector('y4')
+    y5 = T.ivector('y5')
+    y6 = T.ivector('y6')
+    y7 = T.ivector('y7')
+
+    y0 = [0]
+    y1 = [0]
+    y2 = [0]
+    y3 = [0]
+    y4 = [0]
+    y5 = [0]
+    y6 = [0]
+    y7 = [1]
+
+
+    #[y0, y1, y2, y3, y4, y5, y6, y7]
+
+    rng = numpy.random.RandomState(1234)
+    classifier = MLP(rng, x, 3, n_hidden, 1)
+
+    cost = classifier.negative_log_likelihood(y) \
      + L1_reg * classifier.L1 \
      + L2_reg * classifier.L2_sqr
 
 	# compute the gradient of cost with respect to theta (sotred in params)
 	# the resulting gradients will be stored in a list gparams
-	gparams = []
-	for param in classifier.params:
-	    gparam = T.grad(cost, param)
-	    gparams.append(gparam)
+    gparams = []
+    for param in classifier.params:
+	       gparam = T.grad(cost, param)
+	       gparams.append(gparam)
 
 	# specify how to update the parameters of the model as a list of
 	# (variable, update expression) pairs
-	updates = []
+    updates = []
 	# given two list the zip A = [a1, a2, a3, a4] and B = [b1, b2, b3, b4] of
 	# same length, zip generates a list C of same size, where each element
 	# is a pair formed from the two lists :
 	#    C = [(a1, b1), (a2, b2), (a3, b3), (a4, b4)]
-	for param, gparam in zip(classifier.params, gparams):
-	    updates.append((param, param - learning_rate * gparam))
+    for param, gparam in zip(classifier.params, gparams):
+	       updates.append((param, param - learning_rate * gparam))
 
-	train_model = theano.function(inputs=[tempx, tempy], 
-			outputs=cost, 
-			updates=updates, 
-			givens={
-				x: tempx,
-				y: tempy})
+    train_model = theano.function(inputs=[tempx, tempy], 
+		  outputs=cost, 
+		  updates=updates, 
+		  givens={
+			 x: tempx,
+			 y: tempy})
 
+    x = [[0,0,0],[0,0,1], [0,1,1], [0,1,0], [1,0,0], [1,1,0], [1,0,1], [1,1,1]]
+    #y = [0, 0, 0, 0, 0, 0, 0, 1]
+    y = [[0], [0], [0], [0], [0], [0], [0], [1]]
 
-	print '...building the model'
+    print '...building the model'
 
-	epoch = 0
-	threshold = 0.1
-	while(epoch < n_epochs):
-		epoch += 1
-		for minibatch_index in range(0,8):
-			minibatch_average_cost = train_model(train_set_x[minibatch_index], train_set_y[minibatch_index])
+    epoch = 0
+    threshold = 0.1
+    while(epoch < n_epochs):
+        epoch += 1
+        for i in range(0,7):
+            minibatch_average_cost = train_model([x[i]], y[i])
+            print(str(minibatch_average_cost) + " " + str(epoch) + " \n")
 
-			print(str(minibatch_average_cost) + " " + str(epoch) + " \n")
-
-	tempx = [1, 1, 1]
-	tempy = [1]
 
 	#output = train_model(tempx, tempy)
 	#print str(output)
-
 
 if __name__ == '__main__':
 	test_mlp()
