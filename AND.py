@@ -202,9 +202,5 @@ def test_mlp(learning_rate=0.05, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batc
 		print float(minibatch_average_cost), float(errors), epoch
         print predict
 
-    
-    minibatch_average_cost,errors,ouput = train_model([0,0,1], 0)
-    print ouput
-
 if __name__ == '__main__':
 	test_mlp()
