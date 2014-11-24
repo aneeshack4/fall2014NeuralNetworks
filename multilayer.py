@@ -113,7 +113,7 @@ class MLP(object):
     class).
     """
 
-    def __init__(self, rng, input, n_in, n_hidden, n_out):
+    def __init__(self, rng, input, n_in, n_out):
         """Initialize the parameters for the multilayer perceptron
 
         :type rng: numpy.random.RandomState
@@ -140,30 +140,54 @@ class MLP(object):
         # into a HiddenLayer with a tanh activation function connected to the
         # LogisticRegression layer; the activation function can be replaced by
         # sigmoid or any other nonlinear function
-        self.hiddenLayer1 = HiddenLayer(rng=rng, input=input,
-                                       n_in=n_in, n_out=n_hidden,
-                                       activation=T.tanh)
 
-        self.hiddenLayer2 = HiddenLayer(rng=rng, input=self.hiddenLayer1.output,
-                                       n_in=n_hidden, n_out=n_hidden,
-                                       activation=T.tanh)
+        # Initialize layer list and specify layer_nodes
+        layers = []
+        layer_nodes = [n_in, n_in/2, n_in/4, n_in/8, n_out]
+
+        # Set up the hidden layers and connections
+        for i in range(0, len(layer_nodes)-1):
+            temp = 0
+            if i == 0:
+                temp = HiddenLayer(rng=rng, input=input,
+                    n_in=n_in, n_out=layer_nodes[i+1],
+                    activation=T.tanh)
+            else:
+                temp = HiddenLayer(rng=rng, input=layers[i-1].output,
+                    n_in=layer_nodes[i], n_out=layer_nodes[i+1],
+                    activation=T.tanh)
+            layers.append(temp)
+
+        # self.hiddenLayer1 = HiddenLayer(rng=rng, input=input,
+        #                                n_in=n_in, n_out=n_hidden,
+        #                                activation=T.tanh)
+
+        # self.hiddenLayer2 = HiddenLayer(rng=rng, input=self.hiddenLayer1.output,
+        #                                n_in=n_hidden, n_out=n_hidden,
+        #                                activation=T.tanh)
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.logRegressionLayer = LogisticRegression(
-            input=self.hiddenLayer2.output,
-            n_in=n_hidden,
+            input=layers[len(layers)-1].output,
+            n_in=n_out,
             n_out=n_out)
 
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
-        self.L1 = abs(self.hiddenLayer1.W).sum() + abs(self.hiddenLayer2.W).sum() \
-                + abs(self.logRegressionLayer.W).sum()
+        self.L1 = 0
+        
+        for i in range(0, len(layers)-1):
+            self.L1 = self.L1 + abs(layers[i].W).sum()
+        self.L1 = self.L1 + abs(self.logRegressionLayer.W).sum()
 
         # square of L2 norm ; one regularization option is to enforce
         # square of L2 norm to be small
-        self.L2_sqr = (self.hiddenLayer1.W ** 2).sum()  + (self.hiddenLayer2.W ** 2).sum() \
-                    + (self.logRegressionLayer.W ** 2).sum()
+        self.L2_sqr = 0
+        
+        for i in range(0, len(layers)-1):
+            self.L2_sqr = self.L2_sqr + abs(layers[i].W ** 2).sum()
+        self.L2_sqr = self.L2_sqr + abs(self.logRegressionLayer.W ** 2).sum()
 
         # negative log likelihood of the MLP is given by the negative
         # log likelihood of the output of the model, computed in the
@@ -174,11 +198,14 @@ class MLP(object):
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.hiddenLayer1.params + self.hiddenLayer2.params + self.logRegressionLayer.params
+        self.params = []
+        for i in range(0, len(layers)-1):
+            self.params = self.params + layers[i].params
+        self.params = self.params + self.logRegressionLayer.params
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
-             dataset='redditData.save.gz', batch_size=20, n_hidden=500):
+             dataset='redditData.save.gz', batch_size=20):
     """
     #old data = 'mnist.pkl.gz'
     Demonstrate stochastic gradient descent optimization for a multilayer
@@ -232,8 +259,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     rng = numpy.random.RandomState(1234)
 
     # construct the MLP class
-    classifier = MLP(rng=rng, input=x, n_in=5549,
-                     n_hidden=5549, n_out=3)
+    classifier = MLP(rng=rng, input=x, n_in=5549, n_out=3)
 
     # the cost we minimize during training is the negative log likelihood of
     # the model plus the regularization terms (L1 and L2); cost is expressed
