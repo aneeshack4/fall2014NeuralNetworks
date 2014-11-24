@@ -11,7 +11,7 @@ already_done = []
 
 prawWords = ['praw', 'reddit_api', 'mellort']
 
-subreddit = r.get_subreddit('news')
+subreddit = r.get_subreddit('all')
 
 titles = [] #list of each post's unicode title
 
@@ -31,18 +31,20 @@ topTitleDict = {} #mapping of all words to their word count in each top post
 middleTitleDict = {} #mapping of all words to their word count in each middle post
 bottomTitleDict = {} #mapping of all words to their word count in each bottom post
 
-for submission in subreddit.get_hot(limit=1000):
+for submission in subreddit.get_hot(limit=5000):
     titles.append(unicode(submission.title).lower)
     title = submission.title.split()
     for t in title:
         wordList[unicode(t).lower()] = 0
     titleScores.append(submission.score)
-    if (submission.score >= 500):
+    if (submission.score >= 1000):
         top.append(submission.title)
-    elif(submission.score < 500 and submission.score >= 50):
+    elif(submission.score < 1000 and submission.score >= 200):
         middle.append(submission.title)
     else:
         bottom.append(submission.title)
+
+print str(len(titles))
 
 #top submissions, middle submissions, and bottom submissions
 for title in top:
