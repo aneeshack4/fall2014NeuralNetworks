@@ -9,10 +9,11 @@ already_done = []
 
 prawWords = ['praw', 'reddit_api', 'mellort']
 
-subreddit = r.get_subreddit('learnpython')
+subreddit = r.get_subreddit('news')
 
 word_count = {}
 
+outerList = []
 outerTopList = []
 outerMiddleList = []
 outerBottomList = []
@@ -29,17 +30,20 @@ top_title_dict = {}
 middle_title_dict = {}
 bottom_title_dict = {}
 
-top_training_dict = {}
-middle_training_dict = {}
-bottom_training_dict = {}
+training_dict = {}
+# top_training_dict = {}
+# middle_training_dict = {}
+# bottom_training_dict = {}
 
-top_validation_dict = {}
-middle_validation_dict = {}
-bottom_training_dict = {}
+validation_dict = {}
+# top_validation_dict = {}
+# middle_validation_dict = {}
+# bottom_training_dict = {}
 
-top_testing_dict = {}
-middle_validation_dict = {}
-bottom_training_dict = {}
+testing_dict = {}
+# top_testing_dict = {}
+# middle_validation_dict = {}
+# bottom_training_dict = {}
 
 for submission in subreddit.get_hot(limit=1000):
     op_text = submission.selftext.lower()
@@ -49,14 +53,15 @@ for submission in subreddit.get_hot(limit=1000):
         msg = '[PRAW related thread](%s)' % submission.short_link
         r.send_message('_Daimon_', 'PRAW Thread', msg)
         already_done.append(submission.id)
-    titles.append(str(submission.title))
+    titles.append(submission.title) #changed from str(title).lower()
     title = submission.title.split()
     for t in title:
-        word_count[str(t).lower()] = 0
+        word_count[t] = 0
+        #word_count[str(t).lower()] = 0
     title_scores.append(submission.score)
-    if (submission.score > 1000):
+    if (submission.score >= 500):
         top.append(submission.title)
-    elif(submission < 1000 and submission > 100):
+    elif(submission.score < 500 and submission.score >= 50):
         middle.append(submission.title)
     else:
         bottom.append(submission.title)
@@ -72,7 +77,8 @@ for title in titles:
     title_dict = word_count.copy()
     words = title.split()
     for word in words:
-        title_dict[str(word).lower()]+=1
+        title_dict[word]+=1
+        #title_dict[str(word).lower()]+=1
     title_count = []
     for key in sorted(title_dict):
         title_count.append(title_dict[key])
@@ -86,7 +92,8 @@ for title in top:
     top_title_dict = word_count.copy()
     words = title.split()
     for word in words:
-        top_title_dict[str(word).lower()]+=1
+        top_title_dict[word]+=1
+        #top_title_dict[str(word).lower()]+=1
     top_title_count = []
     for key in sorted(top_title_dict):
         top_title_count.append(top_title_dict[key])
@@ -98,7 +105,8 @@ for title in middle:
     middle_title_dict = word_count.copy()
     words = title.split()
     for word in words:
-        middle_title_dict[str(word).lower()]+=1
+        middle_title_dict[word]+=1
+        #middle_title_dict[str(word).lower()]+=1
     middle_title_count = []
     for key in sorted(middle_title_dict):
         middle_title_count.append(middle_title_dict[key])
@@ -110,7 +118,8 @@ for title in bottom:
     bottom_title_dict = word_count.copy()
     words = title.split()
     for word in words:
-        bottom_title_dict[str(word).lower()]+=1
+        bottom_title_dict[word]+=1
+        #bottom_title_dict[str(word).lower()]+=1
     bottom_title_count = []
     for key in sorted(bottom_title_dict):
         bottom_title_count.append(bottom_title_dict[key])
@@ -118,9 +127,40 @@ for title in bottom:
     #print "Outer List:\n" + str(bottom_title_count) + "\n"
     outerBottomList.append(bottom_title_count)
 
-print len(top_title_dict)
-print len(middle_title_dict)
-print len(bottom_title_dict)
+print len(outerTopList)
+print len(outerMiddleList)
+print len(outerBottomList)
+
+# training_set = []
+# training_classification = []
+
+# validation_set = []
+# validation_classification = []
+
+# test_set = []
+# test_classification = []
+
+whole_thing_set = [[],[],[]]
+whole_thing_classification = [[],[],[]]
+
+listNum = 0
+for i in range(0, max(len(outerTopList), len(outerBottomList), len(outerMiddleList))) :
+    listNum = listNum % 3
+
+    if i < len(outerTopList) : 
+        whole_thing_set[listNum].append(outerTopList[i])
+        whole_thing_classification[listNum].append(2)
+
+    if i < len(outerBottomList) :
+        whole_thing_set[listNum].append(outerBottomList[i])
+        whole_thing_classification[listNum].append(0)
+
+    if i < len(outerMiddleList) :
+        whole_thing_set[listNum].append(outerMiddleList[i])
+        whole_thing_classification[listNum].append(1)
+
+    listNum = listNum + 1
+
 
 """for title in title_word_counts:
     print "\n" + title
