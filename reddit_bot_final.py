@@ -1,5 +1,7 @@
 import time
 import praw
+import cPickle
+import gzip
 
 r = praw.Reddit('PRAW related-question monitor by u/_Daimon_ v 1.0.'
                 'Url: https://praw.readthedocs.org/en/latest/'
@@ -11,54 +13,30 @@ prawWords = ['praw', 'reddit_api', 'mellort']
 
 subreddit = r.get_subreddit('news')
 
-word_count = {}
+titles = [] #list of each post's unicode title
 
-outerList = []
-outerTopList = []
-outerMiddleList = []
-outerBottomList = []
+titleScores = [] #list of each posts's score
 
-titles = []
-
-title_scores = []
+outerTopList = [] #list of top submission word count lists
+outerMiddleList = [] #list of top submission word count lists
+outerBottomList = [] #list of top submission word count lists
 
 top = [] #submissions with a score of more than 1000
 middle = [] #submissions with a score between 1000 and 100
 bottom = [] #submissions with a score less than or equal to 100 
 
-top_title_dict = {}
-middle_title_dict = {}
-bottom_title_dict = {}
+wordList = {} #mapping of each word in all posts to its count, used as a template
 
-training_dict = {}
-# top_training_dict = {}
-# middle_training_dict = {}
-# bottom_training_dict = {}
-
-validation_dict = {}
-# top_validation_dict = {}
-# middle_validation_dict = {}
-# bottom_training_dict = {}
-
-testing_dict = {}
-# top_testing_dict = {}
-# middle_validation_dict = {}
-# bottom_training_dict = {}
+topTitleDict = {} #mapping of all words to their word count in each top post
+middleTitleDict = {} #mapping of all words to their word count in each middle post
+bottomTitleDict = {} #mapping of all words to their word count in each bottom post
 
 for submission in subreddit.get_hot(limit=1000):
-    op_text = submission.selftext.lower()
-    has_praw = any(string in op_text for string in prawWords)
-    # Test if it contains a PRAW-related question
-    if submission.id not in already_done and has_praw:
-        msg = '[PRAW related thread](%s)' % submission.short_link
-        r.send_message('_Daimon_', 'PRAW Thread', msg)
-        already_done.append(submission.id)
-    titles.append(submission.title) #changed from str(title).lower()
+    titles.append(unicode(submission.title).lower)
     title = submission.title.split()
     for t in title:
-        word_count[t] = 0
-        #word_count[str(t).lower()] = 0
-    title_scores.append(submission.score)
+        wordList[unicode(t).lower()] = 0
+    titleScores.append(submission.score)
     if (submission.score >= 500):
         top.append(submission.title)
     elif(submission.score < 500 and submission.score >= 50):
@@ -66,103 +44,63 @@ for submission in subreddit.get_hot(limit=1000):
     else:
         bottom.append(submission.title)
 
-title_word_counts = {}
-
-#print str(title_scores)
-
-#print str(sorted(word_count)) + "\n"
-
-#all titles 
-for title in titles:
-    title_dict = word_count.copy()
-    words = title.split()
-    for word in words:
-        title_dict[word]+=1
-        #title_dict[str(word).lower()]+=1
-    title_count = []
-    for key in sorted(title_dict):
-        title_count.append(title_dict[key])
-    #print "Title: " + title
-    #print "Outer List:\n" + str(title_count) + "\n"
-    outerList.append(title_count)
-    title_word_counts[title] = title_dict
-
-#top submissions, middle submissions, bottom submissions
+#top submissions, middle submissions, and bottom submissions
 for title in top:
-    top_title_dict = word_count.copy()
+    topTitleDict = wordList.copy()
     words = title.split()
     for word in words:
-        top_title_dict[word]+=1
-        #top_title_dict[str(word).lower()]+=1
-    top_title_count = []
-    for key in sorted(top_title_dict):
-        top_title_count.append(top_title_dict[key])
-    #print "Title: " + title
-    #print "Outer List:\n" + str(top_title_count) + "\n"
-    outerTopList.append(top_title_count)
+        topTitleDict[unicode(word).lower()]+=1
+    topTitleCount = []
+    for key in sorted(topTitleDict):
+        topTitleCount.append(topTitleDict[key])
+    outerTopList.append(topTitleCount)
 
 for title in middle:
-    middle_title_dict = word_count.copy()
+    middleTitleDict = wordList.copy()
     words = title.split()
     for word in words:
-        middle_title_dict[word]+=1
-        #middle_title_dict[str(word).lower()]+=1
-    middle_title_count = []
-    for key in sorted(middle_title_dict):
-        middle_title_count.append(middle_title_dict[key])
-    #print "Title: " + title
-    #print "Outer List:\n" + str(middle_title_count) + "\n"
-    outerMiddleList.append(middle_title_count)
+        middleTitleDict[unicode(word).lower()]+=1
+    middleTitleCount = []
+    for key in sorted(middleTitleDict):
+        middleTitleCount.append(middleTitleDict[key])
+    outerMiddleList.append(middleTitleCount)
 
 for title in bottom:
-    bottom_title_dict = word_count.copy()
+    bottomTitleDict = wordList.copy()
     words = title.split()
     for word in words:
-        bottom_title_dict[word]+=1
-        #bottom_title_dict[str(word).lower()]+=1
-    bottom_title_count = []
-    for key in sorted(bottom_title_dict):
-        bottom_title_count.append(bottom_title_dict[key])
-    #print "Title: " + title
-    #print "Outer List:\n" + str(bottom_title_count) + "\n"
-    outerBottomList.append(bottom_title_count)
+        bottomTitleDict[unicode(word).lower()]+=1
+    bottomTitleCount = []
+    for key in sorted(bottomTitleDict):
+        bottomTitleCount.append(bottomTitleDict[key])
+    outerBottomList.append(bottomTitleCount)
 
 print len(outerTopList)
 print len(outerMiddleList)
 print len(outerBottomList)
 
-# training_set = []
-# training_classification = []
-
-# validation_set = []
-# validation_classification = []
-
-# test_set = []
-# test_classification = []
-
-whole_thing_set = [[],[],[]]
-whole_thing_classification = [[],[],[]]
+titleList = [[],[],[]]
+classificationList = [[],[],[]]
 
 listNum = 0
-for i in range(0, max(len(outerTopList), len(outerBottomList), len(outerMiddleList))) :
+for i in range(0, max(len(outerTopList), len(outerBottomList), len(outerMiddleList))):
     listNum = listNum % 3
-
-    if i < len(outerTopList) : 
-        whole_thing_set[listNum].append(outerTopList[i])
-        whole_thing_classification[listNum].append(2)
-
-    if i < len(outerBottomList) :
-        whole_thing_set[listNum].append(outerBottomList[i])
-        whole_thing_classification[listNum].append(0)
-
-    if i < len(outerMiddleList) :
-        whole_thing_set[listNum].append(outerMiddleList[i])
-        whole_thing_classification[listNum].append(1)
-
+    if i < len(outerTopList): 
+        titleList[listNum].append(outerTopList[i])
+        classificationList[listNum].append(2)
+    if i < len(outerMiddleList):
+        titleList[listNum].append(outerMiddleList[i])
+        classificationList[listNum].append(1)
+    if i < len(outerBottomList):
+        titleList[listNum].append(outerBottomList[i])
+        classificationList[listNum].append(0)
     listNum = listNum + 1
 
+saveMatrix = []
+saveMatrix.append((titleList[0], classificationList[0]))
+saveMatrix.append((titleList[1], classificationList[1]))
+saveMatrix.append((titleList[2], classificationList[2]))
 
-"""for title in title_word_counts:
-    print "\n" + title
-    for key in sorted(title_word_counts[title]):
-        print "%s: %s" % (key, title_word_counts[title][key])"""
+fp = gzip.GzipFile('redditData.save.gz', 'wb')
+fp.write(cPickle.dumps(saveMatrix, protocol=cPickle.HIGHEST_PROTOCOL))
+fp.close()
