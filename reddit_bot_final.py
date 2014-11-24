@@ -1,5 +1,12 @@
 import time
 import praw
+import cPickle
+import gzip
+import numpy
+import scipy
+
+import theano
+import theano.tensor as T
 
 r = praw.Reddit('PRAW related-question monitor by u/_Daimon_ v 1.0.'
                 'Url: https://praw.readthedocs.org/en/latest/'
@@ -29,21 +36,6 @@ bottom = [] #submissions with a score less than or equal to 100
 top_title_dict = {}
 middle_title_dict = {}
 bottom_title_dict = {}
-
-training_dict = {}
-# top_training_dict = {}
-# middle_training_dict = {}
-# bottom_training_dict = {}
-
-validation_dict = {}
-# top_validation_dict = {}
-# middle_validation_dict = {}
-# bottom_training_dict = {}
-
-testing_dict = {}
-# top_testing_dict = {}
-# middle_validation_dict = {}
-# bottom_training_dict = {}
 
 for submission in subreddit.get_hot(limit=1000):
     op_text = submission.selftext.lower()
@@ -151,16 +143,35 @@ for i in range(0, max(len(outerTopList), len(outerBottomList), len(outerMiddleLi
         whole_thing_set[listNum].append(outerTopList[i])
         whole_thing_classification[listNum].append(2)
 
+    if i < len(outerMiddleList) :
+            whole_thing_set[listNum].append(outerMiddleList[i])
+            whole_thing_classification[listNum].append(1)
+
     if i < len(outerBottomList) :
         whole_thing_set[listNum].append(outerBottomList[i])
         whole_thing_classification[listNum].append(0)
 
-    if i < len(outerMiddleList) :
-        whole_thing_set[listNum].append(outerMiddleList[i])
-        whole_thing_classification[listNum].append(1)
-
     listNum = listNum + 1
 
+# saveMatrix = []
+# saveMatrix.append((theano.shared(numpy.array(whole_thing_set[0])), theano.shared(numpy.array(whole_thing_classification[0]))))
+# saveMatrix.append((theano.shared(numpy.array(whole_thing_set[1])), theano.shared(numpy.array(whole_thing_classification[1]))))
+# saveMatrix.append((theano.shared(numpy.array(whole_thing_set[2])), theano.shared(numpy.array(whole_thing_classification[2]))))
+
+
+saveMatrix = []
+saveMatrix.append((whole_thing_set[0], whole_thing_classification[0]))
+saveMatrix.append((whole_thing_set[1], whole_thing_classification[1]))
+saveMatrix.append((whole_thing_set[2], whole_thing_classification[2]))
+
+
+fp = gzip.GzipFile('redditData.save.gz', 'wb')
+fp.write(cPickle.dumps(saveMatrix, protocol=cPickle.HIGHEST_PROTOCOL))
+fp.close()
+
+# f = gzip.open('redditData.save.gz', 'wb')
+# cPickle.dump(saveMatrix, f, protocol=cPickle.HIGHEST_PROTOCOL)
+# f.close()
 
 """for title in title_word_counts:
     print "\n" + title
