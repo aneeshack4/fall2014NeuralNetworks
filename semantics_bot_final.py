@@ -15,7 +15,13 @@ class Title(object):
         title = submission.title.split()
         words = title.split()
         for word in words:
-            topTitleDict[unicode(word).lower()]+=1
+            fixedWord = unicode(word).lower()
+            if en.is_verb(fixedWord):
+                self.verCount = self.verCount + 1
+            elif en.is_noun(fixedWord):
+                self.nounCount = self.nounCount + 1
+            elif en.is_adjective(fixedWord):
+                self.adjCount = self.adjCount + 1
 
 
 
