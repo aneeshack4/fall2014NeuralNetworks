@@ -20,6 +20,7 @@ References:
 """
 __docformat__ = 'restructedtext en'
 
+# import semantics_bot_final
 
 import cPickle
 import gzip
@@ -143,7 +144,7 @@ class MLP(object):
 
         # Initialize layer list and specify layer_nodes
         layers = []
-        layer_nodes = [n_in, n_in/2, n_in/4, n_in/8, n_out]
+        layer_nodes = [n_in, 500, 250, 50, n_out]
 
         # Set up the hidden layers and connections
         for i in range(0, len(layer_nodes)-1):
@@ -205,9 +206,10 @@ class MLP(object):
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
-             dataset='redditData.save.gz', batch_size=20):
+             dataset='semanticsData.save.gz', batch_size=20):
     """
     #old data = 'mnist.pkl.gz'
+    #reddit data = 'redditData.save.gz'
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
 
@@ -259,7 +261,8 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     rng = numpy.random.RandomState(1234)
 
     # construct the MLP class
-    classifier = MLP(rng=rng, input=x, n_in=5549, n_out=3)
+    # classifier = MLP(rng=rng, input=x, n_in=5549, n_out=3)
+    classifier = MLP(rng=rng, input=x, n_in=5, n_out=2)
 
     # the cost we minimize during training is the negative log likelihood of
     # the model plus the regularization terms (L1 and L2); cost is expressed
@@ -380,6 +383,9 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
+
+    
+    
     print >> sys.stderr, ('The code for file ' +
                           os.path.split(__file__)[1] +
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))
