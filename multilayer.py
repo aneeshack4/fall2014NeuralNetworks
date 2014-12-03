@@ -206,7 +206,7 @@ class MLP(object):
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
-             dataset='semanticsData.save.gz', batch_size=20):
+             dataset='leagueData.save.gz', batch_size=20):
     """
     #old data = 'mnist.pkl.gz'
     #reddit data = 'redditData.save.gz'
@@ -262,7 +262,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
     # construct the MLP class
     # classifier = MLP(rng=rng, input=x, n_in=5549, n_out=3)
-    classifier = MLP(rng=rng, input=x, n_in=5, n_out=2)
+    classifier = MLP(rng=rng, input=x, n_in=799, n_out=3)
 
     # the cost we minimize during training is the negative log likelihood of
     # the model plus the regularization terms (L1 and L2); cost is expressed

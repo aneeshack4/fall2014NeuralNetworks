@@ -13,7 +13,7 @@ already_done = []
 
 prawWords = ['praw', 'reddit_api', 'mellort']
 
-subreddit = r.get_subreddit('all')
+subreddit = r.get_subreddit('leagueoflegends')
 
 titles = [] #list of each post's unicode title
 
@@ -33,15 +33,15 @@ topTitleDict = {} #mapping of all words to their word count in each top post
 middleTitleDict = {} #mapping of all words to their word count in each middle post
 bottomTitleDict = {} #mapping of all words to their word count in each bottom post
 
-for submission in subreddit.get_hot(limit=5000):
+for submission in subreddit.get_hot(limit=150):
     titles.append(unicode(submission.title).lower)
     title = submission.title.split()
     for t in title:
         wordList[unicode(t).lower()] = 0
     titleScores.append(submission.score)
-    if (submission.score >= 1000):
+    if (submission.score >= 200):
         top.append(submission.title)
-    elif(submission.score < 1000 and submission.score >= 200):
+    elif(submission.score < 200 and submission.score >= 10):
         middle.append(submission.title)
     else:
         bottom.append(submission.title)
@@ -105,7 +105,7 @@ saveMatrix.append((titleList[0], classificationList[0]))
 saveMatrix.append((titleList[1], classificationList[1]))
 saveMatrix.append((titleList[2], classificationList[2]))
 
-fp = gzip.GzipFile('redditData.save.gz', 'wb')
+fp = gzip.GzipFile('leagueData.save.gz', 'wb')
 fp.write(cPickle.dumps(saveMatrix, protocol=cPickle.HIGHEST_PROTOCOL))
 fp.close()
 
